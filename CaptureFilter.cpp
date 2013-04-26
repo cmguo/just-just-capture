@@ -30,9 +30,10 @@ namespace ppbox
             if (!Filter::get_sample(sample, ec))
                 return false;
 
-            CaptureSample const header = 
+            CaptureSample const & header = 
                 *(boost::asio::buffer_cast<CaptureSample const *>(sample.data.front()));
 
+            assert(boost::asio::buffer_size(sample.data.front()) == sizeof(header));
             sample.data.front() = sample.data.front() + sizeof(header);
 
             sample.itrack = header.itrack;
@@ -50,9 +51,12 @@ namespace ppbox
                 sample.data);
 
             sample.data.clear();
+            boost::uint32_t size = 0;
             for (boost::uint32_t i = 0; i < header.cbuf; ++i) {
                 sample.data.push_back(boost::asio::buffer(buffers_[i]));
+                size += buffers_[i].len;
             }
+            assert(size == sample.size);
 
             return true;
         }

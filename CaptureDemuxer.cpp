@@ -5,6 +5,7 @@
 #include "ppbox/capture/CaptureFilter.h"
 #include "ppbox/capture/CaptureSource.h"
 
+#include <ppbox/demux/packet/filter/SortFilter.h>
 #include <ppbox/demux/basic/flv/FlvStream.h>
 using namespace ppbox::demux;
 
@@ -52,12 +53,14 @@ namespace ppbox
         bool CaptureDemuxer::check_open(
             boost::system::error_code & ec)
         {
-            if (filter_ == NULL) {
+            assert(filter_ == NULL);
+            bool result = static_cast<CaptureSource &>(source_->source()).get_streams(stream_infos_, ec);
+            if (result) {
                 filter_ = new CaptureFilter;
                 add_filter(filter_);
+                add_filter(new SortFilter(stream_infos_.size()));
             }
-
-            return static_cast<CaptureSource &>(source_->source()).get_streams(stream_infos_, ec);
+            return result;
         }
 
     } // namespace capture
