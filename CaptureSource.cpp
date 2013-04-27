@@ -196,18 +196,24 @@ namespace ppbox
                 return 0;
             }
             CaptureSample & sample = cycle_.front();
-            if (buffers_.size() < sample.cbuf) {
-                buffers_.resize(sample.cbuf);
+            size_t size = sizeof(CaptureSample);
+            if (sample.buffer == NULL) {
+                if (buffers_.size() < sample.size) {
+                    buffers_.resize(sample.size);
+                }
+                config_.get_sample_buffers(sample.context, &buffers_.front());
+                CaptureBuffer buffers2[2];
+                buffers2[0].data = (boost::uint8_t const *)&sample;
+                buffers2[0].len = sizeof(sample);
+                buffers2[1].data = (boost::uint8_t const *)&buffers_.front();
+                buffers2[1].len = sizeof(CaptureBuffer) * sample.size;
+                util::buffers::buffers_copy(buffers,  framework::container::make_array(buffers2));
+                size += sizeof(CaptureBuffer) * sample.size;
+            } else {
+                util::buffers::buffers_copy(buffers,  boost::asio::buffer(&sample, sizeof(sample)));
             }
-            config_.get_sample_buffers(sample.context, &buffers_.front());
-            CaptureBuffer buffers2[2];
-            buffers2[0].data = (boost::uint8_t const *)&sample;
-            buffers2[0].len = sizeof(sample);
-            buffers2[1].data = (boost::uint8_t const *)&buffers_.front();
-            buffers2[1].len = sizeof(CaptureBuffer) * sample.cbuf;
-            util::buffers::buffers_copy(buffers,  framework::container::make_array(buffers2));
             cycle_.pop();
-            return sizeof(CaptureSample) + sizeof(CaptureBuffer) * sample.cbuf;
+            return size;
         }
         
         void CaptureSource::response(

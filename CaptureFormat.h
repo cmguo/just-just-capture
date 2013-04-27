@@ -35,7 +35,7 @@ namespace ppbox
                 , cts_delta(0)
                 , duration(0)
                 , size(0)
-                , cbuf(0)
+                , buffer(NULL)
                 , context(NULL)
             {
             }
@@ -46,12 +46,12 @@ namespace ppbox
             boost::uint32_t cts_delta;
             boost::uint32_t duration;
             boost::uint32_t size;
-            boost::uint32_t cbuf;
+            boost::uint8_t const * buffer;
             void const * context;
 
             boost::uint32_t real_size() const
             {
-                return sizeof(CaptureSample) + sizeof(CaptureBuffer) * (cbuf);
+                return sizeof(CaptureSample) + sizeof(CaptureBuffer) * (size);
             }
         };
 

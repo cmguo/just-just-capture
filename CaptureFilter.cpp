@@ -40,23 +40,27 @@ namespace ppbox
             sample.flags = header.flags;
             sample.dts = header.dts;
             sample.cts_delta = header.cts_delta;
-            sample.size = header.size;
             sample.memory->offset = (intptr_t)header.context;
 
-            if (buffers_.size() < header.cbuf) {
-                buffers_.resize(header.cbuf);
+            if (header.buffer == NULL) {
+                if (buffers_.size() < header.size) {
+                    buffers_.resize(header.size);
+                }
+                util::buffers::buffers_copy(
+                    boost::asio::buffer(&buffers_.front(), sizeof(CaptureBuffer) * header.size), 
+                    sample.data);
+                sample.data.clear();
+                boost::uint32_t size = 0;
+                for (boost::uint32_t i = 0; i < header.size; ++i) {
+                    sample.data.push_back(boost::asio::buffer(buffers_[i]));
+                    size += buffers_[i].len;
+                }
+                sample.size = size;
+            } else {
+                sample.size = header.size;
+                sample.data.clear();
+                sample.data.push_back(boost::asio::buffer(header.buffer, header.size));
             }
-            util::buffers::buffers_copy(
-                boost::asio::buffer(&buffers_.front(), sizeof(CaptureBuffer) * header.cbuf), 
-                sample.data);
-
-            sample.data.clear();
-            boost::uint32_t size = 0;
-            for (boost::uint32_t i = 0; i < header.cbuf; ++i) {
-                sample.data.push_back(boost::asio::buffer(buffers_[i]));
-                size += buffers_[i].len;
-            }
-            assert(size == sample.size);
 
             return true;
         }
