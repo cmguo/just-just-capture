@@ -26,7 +26,10 @@ namespace ppbox
             , beg_(false)
             , eof_(false)
             , cycle_(1024)
+            , free_pieces_(1024 * 3)
         {
+            feature_.piece_size = 256;
+            feature_.block_size = 20 * 1024;
         }
 
         CaptureSource::~CaptureSource()
@@ -42,6 +45,12 @@ namespace ppbox
                 return false;
             }
             config_ = config;
+            if (config_.get_sample_buffers == NULL) {
+                config_.get_sample_buffers = s_get_sample_buffers;
+            }
+            if (config_.free_sample == NULL) {
+                config_.free_sample = s_free_sample;
+            }
             boost::uint32_t count = config_.stream_count; 
             streams_.resize(count);
             stream_begs_.resize(count, false);
@@ -79,6 +88,10 @@ namespace ppbox
                         response(boost::system::error_code());
                     }
                 }
+                if (sample.context == NULL) {
+                    assert(sample.buffer);
+                    cycle_.back().context = copy_sample_buffers(cycle_.back().size, cycle_.back().buffer);
+                }
                 ec.clear();
                 return true;
             } else {
@@ -112,12 +125,21 @@ namespace ppbox
             return true;
         }
 
-        bool CaptureSource::free_sample(
-            void const * context, 
+        bool CaptureSource::get_sample_buffers(
+            CaptureSample const & sample, 
+            std::vector<CaptureBuffer> & buffers, 
             boost::system::error_code & ec)
         {
             ec.clear();
-            return config_.free_sample(context);
+            return config_.get_sample_buffers(sample.context, &buffers.at(0));
+        }
+
+        bool CaptureSource::free_sample(
+            CaptureSample const & sample, 
+            boost::system::error_code & ec)
+        {
+            ec.clear();
+            return config_.free_sample(sample.context);
         }
 
         boost::system::error_code CaptureSource::open(
@@ -196,24 +218,9 @@ namespace ppbox
                 return 0;
             }
             CaptureSample & sample = cycle_.front();
-            size_t size = sizeof(CaptureSample);
-            if (sample.buffer == NULL) {
-                if (buffers_.size() < sample.size) {
-                    buffers_.resize(sample.size);
-                }
-                config_.get_sample_buffers(sample.context, &buffers_.front());
-                CaptureBuffer buffers2[2];
-                buffers2[0].data = (boost::uint8_t const *)&sample;
-                buffers2[0].len = sizeof(sample);
-                buffers2[1].data = (boost::uint8_t const *)&buffers_.front();
-                buffers2[1].len = sizeof(CaptureBuffer) * sample.size;
-                util::buffers::buffers_copy(buffers,  framework::container::make_array(buffers2));
-                size += sizeof(CaptureBuffer) * sample.size;
-            } else {
-                util::buffers::buffers_copy(buffers,  boost::asio::buffer(&sample, sizeof(sample)));
-            }
+            util::buffers::buffers_copy(buffers,  boost::asio::buffer(&sample, sizeof(sample)));
             cycle_.pop();
-            return size;
+            return sizeof(CaptureSample);
         }
         
         void CaptureSource::response(
@@ -224,6 +231,154 @@ namespace ppbox
                 resp.swap(resp_);
                 resp(ec);
             }
+        }
+
+        CaptureSource::Piece * CaptureSource::alloc_pieces(
+            size_t count)
+        {
+            Piece * p = NULL;
+            if (free_pieces_.size() < count) {
+                Piece ** pp = &p;
+                for (size_t i = 0; i < count; ++i) {
+                    *pp = alloc_piece();
+                    pp = &(*pp)->next;
+                }
+            } else {
+                framework::container::SafeCycle<Piece *>::const_iterator iter = free_pieces_.begin();
+                Piece ** pp = &p;
+                for (size_t i = 0; i < count; ++i, ++iter) {
+                    *pp = *iter;
+                    pp = &(*pp)->next;
+                }
+                free_pieces_.pop(count);
+            }
+            return p;
+        }
+
+        void CaptureSource::free_pieces(
+            Piece * list)
+        {
+            while (list) {
+                Piece * p = list;
+                list = list->next;
+                p->next = NULL;
+                if (!free_pieces_.push(p))
+                    free_piece(p);
+            }
+        }
+
+        CaptureSource::Piece * CaptureSource::alloc_piece()
+        {
+            boost::mutex::scoped_lock lc(mutex_);
+            if (free_pieces2_ == NULL) {
+                void * ptr = memory_.alloc_block(feature_.block_size);
+                if (ptr == NULL) {
+                    assert(false);
+                    return NULL;
+                }
+                blocks_.push_back(ptr);
+                void * end = (char *)ptr + feature_.block_size - feature_.piece_size - sizeof(Piece);
+                while (ptr <= end) {
+                    Piece * p = (Piece *)ptr;
+                    ptr = ((char *)(ptr) + sizeof(Piece) + feature_.piece_size);
+                    p->next = free_pieces2_;
+                    free_pieces2_ = p;
+                }
+            }
+            Piece * p = free_pieces2_;
+            free_pieces2_ = free_pieces2_->next;
+            p->next = NULL;
+            return p;
+        }
+
+        void CaptureSource::free_piece(
+            Piece * piece)
+        {
+            boost::mutex::scoped_lock lc(mutex_);
+            piece->next = free_pieces2_;
+            free_pieces2_ = piece;
+        }
+
+        bool CaptureSource::s_get_sample_buffers(
+            void const * context, 
+            CaptureBuffer * buffers)
+        {
+            Piece const * p = (Piece const *)context;
+            Packet const * pkt = (Packet const *)(p + 1);
+            return pkt->owner->get_sample_buffers(p, buffers);
+        }
+
+        bool CaptureSource::s_free_sample(
+            void const * context)
+        {
+            Piece const * p = (Piece const *)context;
+            Packet const * pkt = (Packet const *)(p + 1);
+            return pkt->owner->free_sample(p);
+        }
+
+        struct CaptureSource::piece_list
+        {
+            typedef piece_list const_iterator;
+            piece_list(Piece * p = NULL, size_t s = 0): p_(p), s_(s) {}
+            const_iterator begin() const { return *this; }
+            const_iterator end() const { return const_iterator(); }
+            boost::asio::mutable_buffer operator*() { return boost::asio::mutable_buffer(p_ + 1, s_); }
+            const_iterator operator++() { const_iterator i = *this; p_ = p_->next; return i; }
+            const_iterator & operator++(int) { p_ = p_->next; return *this; }
+            friend bool operator==(const_iterator const & l, const_iterator const & r) { return l.p_ == r.p_; }
+            friend bool operator!=(const_iterator const & l, const_iterator const & r) { return l.p_ != r.p_; }
+        private:
+            Piece * p_;
+            size_t s_;
+        };
+
+        CaptureSource::Piece const * CaptureSource::copy_sample_buffers(
+            boost::uint32_t & size, 
+            boost::uint8_t const * & buffer)
+        {
+            boost::uint32_t count = (sizeof(Packet) + size) / feature_.piece_size;
+            Piece * p = alloc_pieces(count);
+            Packet pkt = {size, this};
+            boost::asio::const_buffer buffers[2] = {
+                boost::asio::buffer(&pkt, sizeof(pkt)), 
+                boost::asio::buffer(buffer, size), 
+            };
+            util::buffers::buffers_copy(piece_list(p), framework::container::make_array(buffers));
+            if (count == 1) {
+                buffer = (boost::uint8_t const *)p + sizeof(Piece) + sizeof(Packet);
+            } else {
+                size = count;
+                buffer = NULL;
+            }
+            return p;
+        }
+
+        bool CaptureSource::get_sample_buffers(
+            Piece const * p, 
+            CaptureBuffer * buffers)
+        {
+            Packet * pkt = (Packet *)(p + 1);
+            boost::uint32_t left = sizeof(Packet) + pkt->size;
+            CaptureBuffer * pb = buffers;
+            while (left > feature_.piece_size) {
+                pb->data = (boost::uint8_t const *)(p + 1);
+                pb->len = feature_.piece_size;
+                p = p->next;
+                ++pb;
+            }
+            pb->data = (boost::uint8_t const *)(p + 1);
+            pb->len = left;
+            buffers->data += sizeof(Packet);
+            buffers->len -= sizeof(Packet);
+            assert(p->next == NULL);
+            return true;
+        }
+
+        bool CaptureSource::free_sample(
+            Piece const * p)
+        {
+            free_pieces(const_cast<Piece *>(p));
+            return true;
         }
 
     } // namespace capture

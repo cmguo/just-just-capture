@@ -6,8 +6,12 @@
 #include "ppbox/capture/CaptureFormat.h"
 
 #include <ppbox/data/base/UrlSource.h>
+#include <ppbox/data/packet/PacketFeature.h>
 
 #include <framework/container/SafeCycle.h>
+#include <framework/memory/PrivateMemory.h>
+
+#include <boost/thread/mutex.hpp>
 
 namespace ppbox
 {
@@ -45,8 +49,13 @@ namespace ppbox
                 std::vector<CaptureStream> & streams, 
                 boost::system::error_code & ec);
 
+            bool get_sample_buffers(
+                CaptureSample const & sample, 
+                std::vector<CaptureBuffer> & buffers, 
+                boost::system::error_code & ec);
+
             bool free_sample(
-                void const * context, 
+                CaptureSample const & sample, 
                 boost::system::error_code & ec);
 
         public:
@@ -98,15 +107,65 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
         private:
+            struct Packet
+            {
+                boost::uint32_t size;
+                CaptureSource * owner;
+            };
+
+            struct Piece
+            {
+                Piece * next;
+            };
+
+            struct piece_list;
+
+        private:
+            Piece * alloc_pieces(
+                size_t count);
+
+            void free_pieces(
+                Piece * list);
+
+            Piece * alloc_piece();
+
+            void free_piece(
+                Piece * list);
+
+        private:
+            static bool s_get_sample_buffers(
+                void const * context, 
+                CaptureBuffer * buffers);
+
+            static bool s_free_sample(
+                void const * context);
+
+            Piece const * copy_sample_buffers(
+                boost::uint32_t & size, 
+                boost::uint8_t const * & buffer);
+
+            bool get_sample_buffers(
+                Piece const * context, 
+                CaptureBuffer * buffers);
+
+            bool free_sample(
+                Piece const * context);
+
+        private:
             CaptureConfigData config_; 
             response_type resp_;
+            ppbox::data::PacketFeature feature_;
             std::vector<CaptureStream> streams_;
             std::vector<bool> stream_begs_;
             std::vector<bool> stream_eofs_;
-            std::vector<CaptureBuffer> buffers_;
             bool beg_;
             bool eof_;
             framework::container::SafeCycle<CaptureSample> cycle_;
+            framework::memory::PrivateMemory memory_;
+            framework::container::SafeCycle<Piece *> free_pieces_;
+            boost::mutex mutex_;
+            Piece * free_pieces2_;
+            std::vector<void *> blocks_;
         };
 
         PPBOX_REGISTER_URL_SOURCE("capture", CaptureSource);

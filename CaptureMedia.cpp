@@ -82,7 +82,7 @@ namespace ppbox
             boost::system::error_code & ec) const
         {
             feature.piece_size = sizeof(CaptureSample);
-            feature.packet_max_size = sizeof(CaptureSample) * 10;
+            feature.packet_max_size = sizeof(CaptureSample);
             feature.buffer_size = 1024 * 20; // 20K
             feature.prepare_size = feature.packet_max_size * 2;
             ec.clear();

@@ -12,11 +12,14 @@ namespace ppbox
     namespace capture
     {
 
+        class CaptureSource;
+
         class CaptureFilter
             : public ppbox::demux::Filter
         {
         public:
-            CaptureFilter();
+            CaptureFilter(
+                CaptureSource & source);
 
             ~CaptureFilter();
 
@@ -39,6 +42,7 @@ namespace ppbox
                 boost::system::error_code & ec);
 
         private:
+            CaptureSource & source_;
             std::vector<CaptureBuffer> buffers_;
         };
 

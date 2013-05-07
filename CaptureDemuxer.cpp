@@ -45,7 +45,7 @@ namespace ppbox
         {
             if (sample.memory) {
                 static_cast<CaptureSource &>(source_->source()).free_sample(
-                    (void *)(intptr_t)sample.memory->offset, ec);
+                    *(CaptureSample const *)(intptr_t)sample.memory->offset, ec);
             }
             return PacketDemuxer::free_sample(sample, ec);
         }
@@ -56,7 +56,7 @@ namespace ppbox
             assert(filter_ == NULL);
             bool result = static_cast<CaptureSource &>(source_->source()).get_streams(stream_infos_, ec);
             if (result) {
-                filter_ = new CaptureFilter;
+                filter_ = new CaptureFilter(static_cast<CaptureSource &>(source().source()));
                 add_filter(filter_);
                 add_filter(new SortFilter(stream_infos_.size()));
             }

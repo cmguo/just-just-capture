@@ -2,6 +2,7 @@
 
 #include "ppbox/capture/Common.h"
 #include "ppbox/capture/CaptureFilter.h"
+#include "ppbox/capture/CaptureSource.h"
 
 #include <ppbox/demux/base/DemuxError.h>
 using namespace ppbox::demux;
@@ -15,7 +16,9 @@ namespace ppbox
     namespace capture
     {
 
-        CaptureFilter::CaptureFilter()
+        CaptureFilter::CaptureFilter(
+            CaptureSource & source)
+            : source_(source)
         {
         }
 
@@ -33,23 +36,21 @@ namespace ppbox
             CaptureSample const & header = 
                 *(boost::asio::buffer_cast<CaptureSample const *>(sample.data.front()));
 
+            assert(sample.size == sizeof(header));
             assert(boost::asio::buffer_size(sample.data.front()) == sizeof(header));
-            sample.data.front() = sample.data.front() + sizeof(header);
+            sample.data.clear();
 
             sample.itrack = header.itrack;
             sample.flags = header.flags;
             sample.dts = header.dts;
             sample.cts_delta = header.cts_delta;
-            sample.memory->offset = (intptr_t)header.context;
+            sample.memory->offset = (intptr_t)&header;
 
             if (header.buffer == NULL) {
                 if (buffers_.size() < header.size) {
                     buffers_.resize(header.size);
                 }
-                util::buffers::buffers_copy(
-                    boost::asio::buffer(&buffers_.front(), sizeof(CaptureBuffer) * header.size), 
-                    sample.data);
-                sample.data.clear();
+                source_.get_sample_buffers(header, buffers_, ec);
                 boost::uint32_t size = 0;
                 for (boost::uint32_t i = 0; i < header.size; ++i) {
                     sample.data.push_back(boost::asio::buffer(buffers_[i]));
