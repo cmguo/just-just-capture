@@ -13,6 +13,8 @@
 #include <framework/logger/StringRecord.h>
 #include <framework/container/Array.h>
 
+#include <boost/bind.hpp>
+
 namespace ppbox
 {
     namespace capture
@@ -27,9 +29,10 @@ namespace ppbox
             , eof_(false)
             , cycle_(1024)
             , free_pieces_(1024 * 3)
+            , free_pieces2_(NULL)
         {
             feature_.piece_size = 256;
-            feature_.block_size = 20 * 1024;
+            feature_.block_size = 256 * 1024;
         }
 
         CaptureSource::~CaptureSource()
@@ -50,6 +53,13 @@ namespace ppbox
             }
             if (config_.free_sample == NULL) {
                 config_.free_sample = s_free_sample;
+                Piece * p = alloc_piece();
+                free_pieces_.push(p);
+                while ((p = free_pieces2_)) {
+                    free_pieces2_ = free_pieces2_->next;
+                    p->next = NULL;
+                    free_pieces_.push(p);
+                }
             }
             boost::uint32_t count = config_.stream_count; 
             streams_.resize(count);
@@ -80,17 +90,18 @@ namespace ppbox
                 ec = framework::system::logic_error::out_of_range;
                 return false;
             }
-            if (cycle_.push(sample)) {
+            CaptureSample sample2 = sample; 
+            if (sample2.context == NULL) {
+                assert(sample2.buffer);
+                sample2.context = copy_sample_buffers(sample2.size, sample2.buffer);
+            }
+            if (cycle_.push(sample2)) {
                 if (!beg_) {
-                    stream_eofs_[sample.itrack] = true;
+                    stream_eofs_[sample2.itrack] = true;
                     if (std::find(stream_eofs_.begin(), stream_eofs_.end(), false) == stream_eofs_.end()) {
                         beg_ = true;
                         response(boost::system::error_code());
                     }
-                }
-                if (sample.context == NULL) {
-                    assert(sample.buffer);
-                    cycle_.back().context = copy_sample_buffers(cycle_.back().size, cycle_.back().buffer);
                 }
                 ec.clear();
                 return true;
@@ -113,6 +124,13 @@ namespace ppbox
                 eof_ = true;
             }
             ec.clear();
+            return true;
+        }
+
+        bool CaptureSource::term()
+        {
+            response(boost::asio::error::operation_aborted);
+            eof_ = true;
             return true;
         }
 
@@ -229,7 +247,7 @@ namespace ppbox
             if (!resp_.empty()) {
                 response_type resp;
                 resp.swap(resp_);
-                resp(ec);
+                get_io_service().post(boost::bind(resp, ec));
             }
         }
 
@@ -243,6 +261,7 @@ namespace ppbox
                     *pp = alloc_piece();
                     pp = &(*pp)->next;
                 }
+                assert(*pp == NULL);
             } else {
                 framework::container::SafeCycle<Piece *>::const_iterator iter = free_pieces_.begin();
                 Piece ** pp = &p;
@@ -251,6 +270,7 @@ namespace ppbox
                     pp = &(*pp)->next;
                 }
                 free_pieces_.pop(count);
+                assert(*pp == NULL);
             }
             return p;
         }
@@ -277,6 +297,7 @@ namespace ppbox
                     return NULL;
                 }
                 blocks_.push_back(ptr);
+                LOG_DEBUG("[alloc_piece] block count = " << blocks_.size());
                 void * end = (char *)ptr + feature_.block_size - feature_.piece_size - sizeof(Piece);
                 while (ptr <= end) {
                     Piece * p = (Piece *)ptr;
@@ -336,14 +357,16 @@ namespace ppbox
             boost::uint32_t & size, 
             boost::uint8_t const * & buffer)
         {
-            boost::uint32_t count = (sizeof(Packet) + size) / feature_.piece_size;
+            boost::uint32_t count = (sizeof(Packet) + size + feature_.piece_size - 1) / feature_.piece_size;
             Piece * p = alloc_pieces(count);
             Packet pkt = {size, this};
             boost::asio::const_buffer buffers[2] = {
                 boost::asio::buffer(&pkt, sizeof(pkt)), 
                 boost::asio::buffer(buffer, size), 
             };
-            util::buffers::buffers_copy(piece_list(p), framework::container::make_array(buffers));
+            util::buffers::buffers_copy(
+                piece_list(p, feature_.piece_size), 
+                framework::container::make_array(buffers));
             if (count == 1) {
                 buffer = (boost::uint8_t const *)p + sizeof(Piece) + sizeof(Packet);
             } else {
@@ -365,6 +388,7 @@ namespace ppbox
                 pb->len = feature_.piece_size;
                 p = p->next;
                 ++pb;
+                left -= feature_.piece_size;
             }
             pb->data = (boost::uint8_t const *)(p + 1);
             pb->len = left;

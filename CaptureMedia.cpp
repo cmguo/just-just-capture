@@ -57,6 +57,9 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             source_->close(ec);
+            CaptureModule & mod(util::daemon::use_module<CaptureModule>(get_io_service()));
+            mod.destroy(source_, ec);
+            source_ = NULL;
         }
 
         bool CaptureMedia::get_basic_info(

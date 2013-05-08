@@ -44,6 +44,8 @@ namespace ppbox
                 boost::uint32_t index, 
                 boost::system::error_code & ec);
 
+            bool term();
+
         public:
             bool get_streams(
                 std::vector<CaptureStream> & streams, 

@@ -121,6 +121,9 @@ namespace ppbox
             }
 
             CaptureInfo * info = *iter;
+
+            info->play_link.path(""); // can't be found by playlink
+
             if (--info->nref == 0) {
                 captures_.erase(iter);
                 delete info->capture;
