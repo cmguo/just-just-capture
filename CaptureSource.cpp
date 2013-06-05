@@ -217,12 +217,6 @@ namespace ppbox
             return ec;
         }
 
-        bool CaptureSource::continuable(
-            boost::system::error_code const & ec)
-        {
-            return ec == boost::asio::error::would_block;
-        }
-
         size_t CaptureSource::private_read_some(
             buffers_t const & buffers, 
             boost::system::error_code & ec)

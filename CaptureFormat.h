@@ -20,6 +20,14 @@ namespace ppbox
             {
             }
 
+            CaptureBuffer & operator=(
+                boost::asio::const_buffer const & b)
+            {
+                data = boost::asio::buffer_cast<boost::uint8_t const *>(b);
+                len = boost::asio::buffer_size(b);
+                return *this;
+            }
+
             boost::uint8_t const * data;
             boost::uint32_t len;
         };

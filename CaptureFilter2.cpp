@@ -1,8 +1,8 @@
-// CaptureFilter.cpp
+// CaptureFilter2.cpp
 
 #include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureFilter.h"
-#include "ppbox/capture/CaptureSource.h"
+#include "ppbox/capture/CaptureFilter2.h"
+#include "ppbox/capture/CaptureSource2.h"
 
 #include <ppbox/demux/base/DemuxError.h>
 using namespace ppbox::demux;
@@ -16,17 +16,17 @@ namespace ppbox
     namespace capture
     {
 
-        CaptureFilter::CaptureFilter(
-            CaptureSource & source)
+        CaptureFilter2::CaptureFilter2(
+            CaptureSource2 & source)
             : source_(source)
         {
         }
 
-        CaptureFilter::~CaptureFilter()
+        CaptureFilter2::~CaptureFilter2()
         {
         }
 
-        bool CaptureFilter::get_sample(
+        bool CaptureFilter2::get_sample(
             Sample & sample,
             boost::system::error_code & ec)
         {
@@ -36,9 +36,8 @@ namespace ppbox
             CaptureSample const & header = 
                 *(boost::asio::buffer_cast<CaptureSample const *>(sample.data.front()));
 
-            assert(sample.size == sizeof(header));
-            assert(boost::asio::buffer_size(sample.data.front()) == sizeof(header));
-            sample.data.clear();
+            assert(boost::asio::buffer_size(sample.data.front()) > sizeof(header));
+            sample.data.front() = sample.data.front() + sizeof(header);
 
             sample.itrack = header.itrack;
             sample.flags = header.flags;
@@ -47,27 +46,27 @@ namespace ppbox
             sample.duration = header.duration;
             sample.memory->offset = (intptr_t)&header;
 
-            if (header.buffer == NULL) {
+            if (header.context == NULL) {
+                sample.size = header.size;
+            } else {
                 if (buffers_.size() < header.size) {
                     buffers_.resize(header.size);
                 }
-                source_.get_sample_buffers(header, buffers_, ec);
+                util::buffers::buffers_copy(
+                    boost::asio::buffer((boost::uint8_t *)&buffers_.at(0), sizeof(CaptureBuffer) * header.size), sample.data);
+                sample.data.clear();
                 boost::uint32_t size = 0;
                 for (boost::uint32_t i = 0; i < header.size; ++i) {
                     sample.data.push_back(boost::asio::buffer(buffers_[i]));
                     size += buffers_[i].len;
                 }
                 sample.size = size;
-            } else {
-                sample.size = header.size;
-                sample.data.clear();
-                sample.data.push_back(boost::asio::buffer(header.buffer, header.size));
             }
 
             return true;
         }
 
-        bool CaptureFilter::get_next_sample(
+        bool CaptureFilter2::get_next_sample(
             Sample & sample,
             boost::system::error_code & ec)
         {
@@ -79,7 +78,7 @@ namespace ppbox
             return true;
         }
 
-        bool CaptureFilter::get_last_sample(
+        bool CaptureFilter2::get_last_sample(
             Sample & sample,
             boost::system::error_code & ec)
         {
@@ -91,7 +90,7 @@ namespace ppbox
             return true;
         }
 
-        void CaptureFilter::parse_for_time(
+        void CaptureFilter2::parse_for_time(
             Sample & sample,
             boost::system::error_code & ec)
         {

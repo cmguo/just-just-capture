@@ -9,4 +9,8 @@
 #include "ppbox/capture/CaptureMedia.h"
 #include "ppbox/capture/CaptureDemuxer.h"
 
+#include "ppbox/capture/CaptureSource2.h"
+#include "ppbox/capture/CaptureMedia2.h"
+#include "ppbox/capture/CaptureDemuxer2.h"
+
 #endif //_PPBOX_CAPTURE_CLASS_REGISTER_H_

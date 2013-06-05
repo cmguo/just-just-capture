@@ -1,7 +1,7 @@
-// CaptureMedia.cpp
+// CaptureMedia2.cpp
 
 #include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureMedia.h"
+#include "ppbox/capture/CaptureMedia2.h"
 #include "ppbox/capture/CaptureModule.h"
 
 #include <framework/logger/Logger.h>
@@ -10,14 +10,14 @@
 
 #include <boost/bind.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureMedia", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureMedia2", framework::logger::Debug);
 
 namespace ppbox
 {
     namespace capture
     {
 
-        CaptureMedia::CaptureMedia(
+        CaptureMedia2::CaptureMedia2(
             boost::asio::io_service & io_svc,
             framework::string::Url const & url)
             : PacketMedia(io_svc, url)
@@ -26,43 +26,37 @@ namespace ppbox
             boost::system::error_code ec;
             PacketMedia::get_basic_info(info_, ec);
             info_.type = info_.live;
-            info_.format = "capture";
+            info_.format = "capture2";
         }
 
-        CaptureMedia::~CaptureMedia()
+        CaptureMedia2::~CaptureMedia2()
         {
         }
 
-        void CaptureMedia::async_open(
+        void CaptureMedia2::async_open(
             MediaBase::response_type const & resp)
         {
             CaptureModule & mod(util::daemon::use_module<CaptureModule>(get_io_service()));
             boost::system::error_code ec;
-            source_ = mod.create(url_, ec);
-            if (source_ == NULL) {
-                get_io_service().post(
-                    boost::bind(resp, ec));
-            } else {
-                source_->async_open(url_, resp);
-            }
+            source_ = new CaptureSource2(get_io_service());
+            source_->async_open(url_, resp);
         }
 
-        void CaptureMedia::cancel(
+        void CaptureMedia2::cancel(
             boost::system::error_code & ec)
         {
             source_->cancel(ec);
         }
 
-        void CaptureMedia::close(
+        void CaptureMedia2::close(
             boost::system::error_code & ec)
         {
             source_->close(ec);
-            CaptureModule & mod(util::daemon::use_module<CaptureModule>(get_io_service()));
-            mod.destroy(source_, ec);
+            delete source_;
             source_ = NULL;
         }
 
-        bool CaptureMedia::get_basic_info(
+        bool CaptureMedia2::get_basic_info(
             ppbox::data::MediaBasicInfo & info,
             boost::system::error_code & ec) const
         {
@@ -71,7 +65,7 @@ namespace ppbox
             return true;
         }
 
-        bool CaptureMedia::get_info(
+        bool CaptureMedia2::get_info(
             ppbox::data::MediaInfo & info,
             boost::system::error_code & ec) const
         {
@@ -80,19 +74,14 @@ namespace ppbox
             return PacketMedia::get_info(info, ec);
         }
 
-        bool CaptureMedia::get_packet_feature(
+        bool CaptureMedia2::get_packet_feature(
             ppbox::data::PacketFeature & feature,
             boost::system::error_code & ec) const
         {
-            feature.piece_size = sizeof(CaptureSample);
-            feature.packet_max_size = sizeof(CaptureSample);
-            feature.buffer_size = 1024 * 20; // 20K
-            feature.prepare_size = feature.packet_max_size * 2;
-            ec.clear();
-            return true;
+            return source_->get_feature(feature, ec);
         }
 
-        ppbox::data::SourceBase & CaptureMedia::source()
+        ppbox::data::SourceBase & CaptureMedia2::source()
         {
             return *source_;
         }

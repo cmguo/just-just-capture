@@ -96,9 +96,6 @@ namespace ppbox
                 boost::uint32_t time_out, 
                 boost::system::error_code & ec);
 
-            virtual bool continuable(
-                boost::system::error_code const & ec);
-
         private:
             virtual std::size_t private_read_some(
                 buffers_t const & buffers, 
