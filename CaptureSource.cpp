@@ -99,6 +99,7 @@ namespace ppbox
                 if (!beg_) {
                     stream_eofs_[sample2.itrack] = true;
                     if (std::find(stream_eofs_.begin(), stream_eofs_.end(), false) == stream_eofs_.end()) {
+                        boost::mutex::scoped_lock lc(mutex_);
                         beg_ = true;
                         response(boost::system::error_code());
                     }
@@ -175,7 +176,11 @@ namespace ppbox
             boost::uint64_t end, 
             response_type const & resp)
         {
+            boost::mutex::scoped_lock lc(mutex_);
             resp_ = resp;
+            if (beg_) {
+                response(boost::system::error_code());
+            }
         }
 
         bool CaptureSource::is_open(
