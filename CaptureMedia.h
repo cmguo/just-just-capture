@@ -12,6 +12,8 @@ namespace ppbox
     namespace capture
     {
 
+        class CaptureModule;
+
         class CaptureMedia
             : public ppbox::data::PacketMedia
         {
@@ -54,6 +56,7 @@ namespace ppbox
                 MediaBase::response_type const & resp);
 
         private:
+            CaptureModule & mod_;
             CaptureSource * source_;
             ppbox::data::MediaInfo info_;
         };

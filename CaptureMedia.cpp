@@ -21,6 +21,7 @@ namespace ppbox
             boost::asio::io_service & io_svc,
             framework::string::Url const & url)
             : PacketMedia(io_svc, url)
+            , mod_(util::daemon::use_module<CaptureModule>(io_svc))
             , source_(NULL)
         {
             boost::system::error_code ec;
@@ -36,9 +37,8 @@ namespace ppbox
         void CaptureMedia::async_open(
             MediaBase::response_type const & resp)
         {
-            CaptureModule & mod(util::daemon::use_module<CaptureModule>(get_io_service()));
             boost::system::error_code ec;
-            source_ = mod.create(url_, ec);
+            source_ = mod_.create(url_, ec);
             if (source_ == NULL) {
                 get_io_service().post(
                     boost::bind(resp, ec));
@@ -57,8 +57,7 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             source_->close(ec);
-            CaptureModule & mod(util::daemon::use_module<CaptureModule>(get_io_service()));
-            mod.destroy(source_, ec);
+            mod_.destroy(source_, ec);
             source_ = NULL;
         }
 
