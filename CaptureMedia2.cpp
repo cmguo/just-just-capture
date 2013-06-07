@@ -36,7 +36,6 @@ namespace ppbox
         void CaptureMedia2::async_open(
             MediaBase::response_type const & resp)
         {
-            CaptureModule & mod(util::daemon::use_module<CaptureModule>(get_io_service()));
             boost::system::error_code ec;
             source_ = new CaptureSource2(get_io_service());
             source_->async_open(url_, resp);
