@@ -41,6 +41,9 @@ namespace ppbox
             boost::asio::io_service & io_svc)
             : ppbox::data::UrlSource(io_svc)
         {
+            feature_.piece_size = 256;
+            feature_.packet_max_size = 256;
+            feature_.block_size = 256 * 1024;
         }
 
         CaptureSource2::~CaptureSource2()
@@ -123,8 +126,9 @@ namespace ppbox
                 status_sort_.push_back(&status_[i]);
             }
             feature_.packet_max_size += sizeof(Sample);
-            feature_.piece_size += 1024;
-            feature_.block_size += 1024 * 1024;
+            feature_.piece_size = feature_.packet_max_size;
+            feature_.block_size = 4 * 1024 * 1024;
+            feature_.buffer_size = 8 * 1024 * 1024;
             return ec;
         }
 
