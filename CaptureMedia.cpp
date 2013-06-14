@@ -75,6 +75,9 @@ namespace ppbox
             boost::system::error_code & ec) const
         {
             info = info_;
+            if (!source_->config().ordered) {
+                info.flags |= ppbox::data::PacketMediaFlags::f_non_ordered;
+            }
             ec.clear();
             return PacketMedia::get_info(info, ec);
         }

@@ -71,15 +71,6 @@ namespace ppbox
             return true;
         }
 
-        bool CaptureSource2::get_feature(
-            ppbox::data::PacketFeature & feature, 
-            boost::system::error_code & ec)
-        {
-            feature = feature_;
-            ec.clear();
-            return true;
-        }
-
         static boost::uint64_t common_divisor(
             boost::uint64_t scale_in, 
             boost::uint64_t scale_out)

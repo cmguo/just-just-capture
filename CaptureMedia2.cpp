@@ -77,7 +77,9 @@ namespace ppbox
             ppbox::data::PacketFeature & feature,
             boost::system::error_code & ec) const
         {
-            return source_->get_feature(feature, ec);
+            ec.clear();
+            feature = source_->feature();
+            return true;
         }
 
         ppbox::data::SourceBase & CaptureMedia2::source()

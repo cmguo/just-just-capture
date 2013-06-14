@@ -4,6 +4,7 @@
 #define _PPBOX_CAPTURE_RTM_FILTER_H_
 
 #include <ppbox/demux/base/DemuxBase.h>
+#include <ppbox/data/packet/PacketFeature.h>
 
 #include <boost/asio/buffer.hpp>
 
@@ -11,6 +12,8 @@ namespace ppbox
 {
     namespace capture
     {
+
+        using ppbox::data::PacketFeature;
 
         struct CaptureBuffer
         {
@@ -67,12 +70,14 @@ namespace ppbox
         {
             CaptureConfigData()
                 : stream_count(0)
+                , ordered(false)
                 , get_sample_buffers(NULL)
                 , free_sample(NULL)
             {
             }
 
             boost::uint32_t stream_count;
+            bool ordered;
             bool (*get_sample_buffers)(void const *, CaptureBuffer *);
             bool (*free_sample)(void const *);
         };

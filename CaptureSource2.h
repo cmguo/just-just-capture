@@ -6,7 +6,6 @@
 #include "ppbox/capture/CaptureFormat.h"
 
 #include <ppbox/data/base/UrlSource.h>
-#include <ppbox/data/packet/PacketFeature.h>
 
 namespace ppbox
 {
@@ -31,9 +30,10 @@ namespace ppbox
                 CaptureSample const & sample, 
                 boost::system::error_code & ec);
 
-            bool get_feature(
-                ppbox::data::PacketFeature & feature, 
-                boost::system::error_code & ec);
+            PacketFeature const & feature() const
+            {
+                return feature_;
+            }
 
         public:
             using ppbox::data::UrlSource::open;
@@ -76,7 +76,7 @@ namespace ppbox
         private:
             struct StreamStatus;
 
-            ppbox::data::PacketFeature feature_;
+            PacketFeature feature_;
             std::vector<CaptureStream> streams_;
             std::vector<StreamStatus> status_;
             std::vector<StreamStatus *> status_sort_;

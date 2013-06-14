@@ -5,7 +5,6 @@
 #include "ppbox/capture/CaptureFilter.h"
 #include "ppbox/capture/CaptureSource.h"
 
-#include <ppbox/demux/packet/filter/SortFilter.h>
 #include <ppbox/demux/basic/flv/FlvStream.h>
 using namespace ppbox::demux;
 
@@ -58,7 +57,6 @@ namespace ppbox
             if (result) {
                 filter_ = new CaptureFilter(static_cast<CaptureSource &>(source().source()));
                 add_filter(filter_);
-                add_filter(new SortFilter(stream_infos_.size()));
             }
             return result;
         }

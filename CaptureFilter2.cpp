@@ -97,6 +97,7 @@ namespace ppbox
             CaptureSample const & header = 
                 *(boost::asio::buffer_cast<CaptureSample const *>(sample.data.front()));
 
+            sample.itrack = header.itrack;
             sample.dts = header.dts;
         }
 
