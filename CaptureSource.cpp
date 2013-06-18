@@ -22,13 +22,28 @@ namespace ppbox
 
         FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureSource", framework::logger::Debug);
 
+        struct CaptureSource::StreamSamples
+        {
+            StreamSamples(
+                bool main)
+            {
+                if (main) {
+                    samples_.reserve(1024);
+                } else {
+                    samples_.reserve(512);
+                }
+                free_pieces_.reserve(1024 * 3);
+            }
+
+            framework::container::SafeCycle<CaptureSample> samples_;
+            framework::container::SafeCycle<Piece *> free_pieces_;
+        };
+
         CaptureSource::CaptureSource(
             boost::asio::io_service & io_svc)
             : ppbox::data::UrlSource(io_svc)
             , beg_(false)
             , eof_(false)
-            , cycle_(1024)
-            , free_pieces_(1024 * 3)
             , free_pieces2_(NULL)
         {
             feature_.piece_size = 256;
@@ -37,6 +52,14 @@ namespace ppbox
 
         CaptureSource::~CaptureSource()
         {
+            if (config_.flags & config_.f_multi_thread) {
+                for (size_t i = 0; i < streams_.size(); ++i) {
+                    delete (StreamSamples *)streams_[i].context;
+                }
+                stream_samples_ = NULL;
+            } else {
+                delete stream_samples_;
+            }
         }
 
         bool CaptureSource::init(
@@ -48,23 +71,34 @@ namespace ppbox
                 return false;
             }
             config_ = config;
+
+            boost::uint32_t count = config_.stream_count; 
+            streams_.resize(count);
+            stream_begs_.resize(count, false);
+            stream_eofs_.resize(count, false);
+
+            if (config_.flags & config_.f_multi_thread) {
+                for (size_t i = 0; i < streams_.size(); ++i) {
+                    if (i == 0) {
+                        streams_[i].context = stream_samples_ = new StreamSamples(true);
+                    } else {
+                        streams_[i].context = new StreamSamples(true);
+                    }
+                }
+            } else {
+                stream_samples_ = new StreamSamples(true);
+                for (size_t i = 0; i < streams_.size(); ++i) {
+                    streams_[i].context = stream_samples_;
+                }
+            }
+
             if (config_.get_sample_buffers == NULL) {
                 config_.get_sample_buffers = s_get_sample_buffers;
             }
             if (config_.free_sample == NULL) {
                 config_.free_sample = s_free_sample;
-                Piece * p = alloc_piece();
-                free_pieces_.push(p);
-                while ((p = free_pieces2_)) {
-                    free_pieces2_ = free_pieces2_->next;
-                    p->next = NULL;
-                    free_pieces_.push(p);
-                }
             }
-            boost::uint32_t count = config_.stream_count; 
-            streams_.resize(count);
-            stream_begs_.resize(count, false);
-            stream_eofs_.resize(count, false);
+
             ec.clear();
             return true;
         }
@@ -90,12 +124,22 @@ namespace ppbox
                 ec = framework::system::logic_error::out_of_range;
                 return false;
             }
+            StreamSamples & stream_samples = *(StreamSamples *)streams_[sample.itrack].context;
             CaptureSample sample2 = sample; 
             if (sample2.context == NULL) {
                 assert(sample2.buffer);
-                sample2.context = copy_sample_buffers(sample2.size, sample2.buffer);
+                sample2.context = copy_sample_buffers(stream_samples, sample2.size, sample2.buffer);
             }
-            if (cycle_.push(sample2)) {
+            if ((config_.flags & config_.f_multi_thread) && sample.itrack == 0) {
+                for (size_t i = 1; i < streams_.size(); ++i) {
+                    StreamSamples & stream_samples2 = *(StreamSamples *)streams_[i].context;
+                    while (!stream_samples2.samples_.empty()) {
+                        stream_samples_->samples_.push(stream_samples2.samples_.front());
+                        stream_samples2.samples_.pop();
+                    }
+                }
+            }
+            if (stream_samples.samples_.push(sample2)) {
                 if (!beg_) {
                     stream_eofs_[sample2.itrack] = true;
                     if (std::find(stream_eofs_.begin(), stream_eofs_.end(), false) == stream_eofs_.end()) {
@@ -193,7 +237,7 @@ namespace ppbox
         boost::system::error_code CaptureSource::close(
             boost::system::error_code & ec)
         {
-            cycle_.clear();
+            //cycle_.clear();
             ec.clear();
             return ec;
         }
@@ -226,7 +270,7 @@ namespace ppbox
             buffers_t const & buffers, 
             boost::system::error_code & ec)
         {
-            if (cycle_.empty()) {
+            if (stream_samples_->samples_.empty()) {
                 if (eof_) {
                     ec = boost::asio::error::eof;
                 } else {
@@ -234,9 +278,9 @@ namespace ppbox
                 }
                 return 0;
             }
-            CaptureSample & sample = cycle_.front();
+            CaptureSample & sample = stream_samples_->samples_.front();
             util::buffers::buffers_copy(buffers,  boost::asio::buffer(&sample, sizeof(sample)));
-            cycle_.pop();
+            stream_samples_->samples_.pop();
             return sizeof(CaptureSample);
         }
         
@@ -251,10 +295,11 @@ namespace ppbox
         }
 
         CaptureSource::Piece * CaptureSource::alloc_pieces(
+            StreamSamples & stream_samples, 
             size_t count)
         {
             Piece * p = NULL;
-            if (free_pieces_.size() < count) {
+            if (stream_samples.free_pieces_.size() < count) {
                 Piece ** pp = &p;
                 for (size_t i = 0; i < count; ++i) {
                     *pp = alloc_piece();
@@ -262,26 +307,27 @@ namespace ppbox
                 }
                 assert(*pp == NULL);
             } else {
-                framework::container::SafeCycle<Piece *>::const_iterator iter = free_pieces_.begin();
+                framework::container::SafeCycle<Piece *>::const_iterator iter = stream_samples.free_pieces_.begin();
                 Piece ** pp = &p;
                 for (size_t i = 0; i < count; ++i, ++iter) {
                     *pp = *iter;
                     pp = &(*pp)->next;
                 }
-                free_pieces_.pop(count);
+                stream_samples.free_pieces_.pop(count);
                 assert(*pp == NULL);
             }
             return p;
         }
 
         void CaptureSource::free_pieces(
+            StreamSamples & stream_samples, 
             Piece * list)
         {
             while (list) {
                 Piece * p = list;
                 list = list->next;
                 p->next = NULL;
-                if (!free_pieces_.push(p))
+                if (!stream_samples.free_pieces_.push(p))
                     free_piece(p);
             }
         }
@@ -333,7 +379,7 @@ namespace ppbox
         {
             Piece const * p = (Piece const *)context;
             Packet const * pkt = (Packet const *)(p + 1);
-            return pkt->owner->free_sample(p);
+            return pkt->owner->free_sample(*pkt->stream, p);
         }
 
         struct CaptureSource::piece_list
@@ -353,11 +399,12 @@ namespace ppbox
         };
 
         CaptureSource::Piece const * CaptureSource::copy_sample_buffers(
+            StreamSamples & stream_samples, 
             boost::uint32_t & size, 
             boost::uint8_t const * & buffer)
         {
             boost::uint32_t count = (sizeof(Packet) + size + feature_.piece_size - 1) / feature_.piece_size;
-            Piece * p = alloc_pieces(count);
+            Piece * p = alloc_pieces(stream_samples, count);
             Packet pkt = {size, this};
             boost::asio::const_buffer buffers[2] = {
                 boost::asio::buffer(&pkt, sizeof(pkt)), 
@@ -398,9 +445,10 @@ namespace ppbox
         }
 
         bool CaptureSource::free_sample(
+            StreamSamples & stream_samples, 
             Piece const * p)
         {
-            free_pieces(const_cast<Piece *>(p));
+            free_pieces(stream_samples, const_cast<Piece *>(p));
             return true;
         }
 

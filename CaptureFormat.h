@@ -70,14 +70,20 @@ namespace ppbox
         {
             CaptureConfigData()
                 : stream_count(0)
-                , ordered(false)
+                , flags(0)
                 , get_sample_buffers(NULL)
                 , free_sample(NULL)
             {
             }
 
+            enum FlagEnum
+            {
+                f_stream_ordered  = 1, 
+                f_multi_thread    = 2, 
+            };
+
             boost::uint32_t stream_count;
-            bool ordered;
+            boost::uint32_t flags;
             bool (*get_sample_buffers)(void const *, CaptureBuffer *);
             bool (*free_sample)(void const *);
         };

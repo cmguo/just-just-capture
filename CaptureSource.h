@@ -116,10 +116,13 @@ namespace ppbox
                 boost::system::error_code const & ec);
 
         private:
+            struct StreamSamples;
+
             struct Packet
             {
                 boost::uint32_t size;
                 CaptureSource * owner;
+                StreamSamples * stream;
             };
 
             struct Piece
@@ -131,9 +134,11 @@ namespace ppbox
 
         private:
             Piece * alloc_pieces(
+                StreamSamples & stream_samples, 
                 size_t count);
 
             void free_pieces(
+                StreamSamples & stream_samples, 
                 Piece * list);
 
             Piece * alloc_piece();
@@ -150,6 +155,7 @@ namespace ppbox
                 void const * context);
 
             Piece const * copy_sample_buffers(
+                StreamSamples & stream_samples, 
                 boost::uint32_t & size, 
                 boost::uint8_t const * & buffer);
 
@@ -158,6 +164,7 @@ namespace ppbox
                 CaptureBuffer * buffers);
 
             bool free_sample(
+                StreamSamples & stream_samples, 
                 Piece const * context);
 
         private:
@@ -169,12 +176,11 @@ namespace ppbox
             std::vector<bool> stream_eofs_;
             bool beg_;
             bool eof_;
-            framework::container::SafeCycle<CaptureSample> cycle_;
             framework::memory::PrivateMemory memory_;
-            framework::container::SafeCycle<Piece *> free_pieces_;
             boost::mutex mutex_;
             Piece * free_pieces2_;
             std::vector<void *> blocks_;
+            StreamSamples * stream_samples_;
         };
 
         PPBOX_REGISTER_URL_SOURCE("capture", CaptureSource);
