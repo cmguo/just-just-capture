@@ -405,7 +405,7 @@ namespace ppbox
         {
             boost::uint32_t count = (sizeof(Packet) + size + feature_.piece_size - 1) / feature_.piece_size;
             Piece * p = alloc_pieces(stream_samples, count);
-            Packet pkt = {size, this};
+            Packet pkt = {size, this, &stream_samples};
             boost::asio::const_buffer buffers[2] = {
                 boost::asio::buffer(&pkt, sizeof(pkt)), 
                 boost::asio::buffer(buffer, size), 
