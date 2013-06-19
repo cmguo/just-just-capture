@@ -174,13 +174,14 @@ namespace ppbox
             std::vector<CaptureStream> streams_;
             std::vector<bool> stream_begs_;
             std::vector<bool> stream_eofs_;
+            std::vector<StreamSamples *> stream_sampless_;
+            StreamSamples * stream_samples_; // main stream
             bool beg_;
             bool eof_;
             framework::memory::PrivateMemory memory_;
             boost::mutex mutex_;
             Piece * free_pieces2_;
             std::vector<void *> blocks_;
-            StreamSamples * stream_samples_;
         };
 
         PPBOX_REGISTER_URL_SOURCE("capture", CaptureSource);

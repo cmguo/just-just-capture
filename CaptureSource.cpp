@@ -53,8 +53,8 @@ namespace ppbox
         CaptureSource::~CaptureSource()
         {
             if (config_.flags & config_.f_multi_thread) {
-                for (size_t i = 0; i < streams_.size(); ++i) {
-                    delete (StreamSamples *)streams_[i].context;
+                for (size_t i = 0; i < stream_sampless_.size(); ++i) {
+                    delete (StreamSamples *)stream_sampless_[i];
                 }
                 stream_samples_ = NULL;
             } else {
@@ -78,18 +78,17 @@ namespace ppbox
             stream_eofs_.resize(count, false);
 
             if (config_.flags & config_.f_multi_thread) {
-                for (size_t i = 0; i < streams_.size(); ++i) {
+                stream_sampless_.resize(count, NULL);
+                for (size_t i = 0; i < stream_sampless_.size(); ++i) {
                     if (i == 0) {
-                        streams_[i].context = stream_samples_ = new StreamSamples(true);
+                        stream_sampless_[i] = stream_samples_ = new StreamSamples(true);
                     } else {
-                        streams_[i].context = new StreamSamples(true);
+                        stream_sampless_[i] = new StreamSamples(true);
                     }
                 }
             } else {
                 stream_samples_ = new StreamSamples(true);
-                for (size_t i = 0; i < streams_.size(); ++i) {
-                    streams_[i].context = stream_samples_;
-                }
+                stream_sampless_.resize(count, stream_samples_);
             }
 
             if (config_.get_sample_buffers == NULL) {
@@ -124,7 +123,7 @@ namespace ppbox
                 ec = framework::system::logic_error::out_of_range;
                 return false;
             }
-            StreamSamples & stream_samples = *(StreamSamples *)streams_[sample.itrack].context;
+            StreamSamples & stream_samples = *stream_sampless_[sample.itrack];
             CaptureSample sample2 = sample; 
             if (sample2.context == NULL) {
                 assert(sample2.buffer);
@@ -132,7 +131,7 @@ namespace ppbox
             }
             if ((config_.flags & config_.f_multi_thread) && sample.itrack == 0) {
                 for (size_t i = 1; i < streams_.size(); ++i) {
-                    StreamSamples & stream_samples2 = *(StreamSamples *)streams_[i].context;
+                    StreamSamples & stream_samples2 = *stream_sampless_[i];
                     while (!stream_samples2.samples_.empty()) {
                         stream_samples_->samples_.push(stream_samples2.samples_.front());
                         stream_samples2.samples_.pop();
