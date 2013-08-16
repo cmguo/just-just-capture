@@ -4,7 +4,6 @@
 #include "ppbox/capture/CaptureSource2.h"
 #include "ppbox/capture/CaptureFormat.h"
 
-#include <ppbox/data/base/SourceError.h>
 #include <ppbox/avcodec/Capture.h>
 using namespace ppbox::avcodec;
 
@@ -215,7 +214,7 @@ namespace ppbox
         {
             std::string::size_type pos = device.find('{');
             std::string name = device.substr(0, pos);
-            Capture * capture = ppbox::avcodec::Capture::create(name);
+            Capture * capture = ppbox::avcodec::Capture::create(name, ec);
             if (capture) {
                 std::map<std::string, std::string> param_map;
                 boost::system::error_code ec = 

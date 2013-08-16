@@ -4,8 +4,6 @@
 #include "ppbox/capture/CaptureSource.h"
 #include "ppbox/capture/CaptureFormat.h"
 
-#include <ppbox/data/base/SourceError.h>
-
 #include <util/buffers/BuffersCopy.h>
 
 #include <framework/logger/Logger.h>
