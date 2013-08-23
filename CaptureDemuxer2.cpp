@@ -5,11 +5,7 @@
 #include "ppbox/capture/CaptureFilter2.h"
 #include "ppbox/capture/CaptureSource2.h"
 
-#include <ppbox/demux/basic/flv/FlvStream.h>
 using namespace ppbox::demux;
-
-#include <ppbox/avformat/flv/FlvTagType.h>
-using namespace ppbox::avformat;
 
 #include <util/buffers/BuffersCopy.h>
 
