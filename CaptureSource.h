@@ -5,8 +5,9 @@
 
 #include "ppbox/capture/CaptureFormat.h"
 
-#include <ppbox/data/base/UrlSource.h>
 #include <ppbox/data/packet/PacketFeature.h>
+
+#include <util/stream/UrlSource.h>
 
 #include <framework/container/SafeCycle.h>
 #include <framework/memory/PrivateMemory.h>
@@ -19,7 +20,7 @@ namespace ppbox
     {
 
         class CaptureSource
-            : public ppbox::data::UrlSource
+            : public util::stream::UrlSource
         {
         public:
             CaptureSource(
@@ -71,15 +72,15 @@ namespace ppbox
             }
 
         public:
-            using ppbox::data::UrlSource::open;
+            using util::stream::UrlSource::open;
 
-            virtual boost::system::error_code open(
+            virtual bool open(
                 framework::string::Url const & url,
                 boost::uint64_t beg, 
                 boost::uint64_t end, 
                 boost::system::error_code & ec);
 
-            using ppbox::data::UrlSource::async_open;
+            using util::stream::UrlSource::async_open;
 
             virtual void async_open(
                 framework::string::Url const & url,
@@ -90,19 +91,19 @@ namespace ppbox
             virtual bool is_open(
                 boost::system::error_code & ec);
 
-            virtual boost::system::error_code close(
+            virtual bool close(
                 boost::system::error_code & ec);
 
         public:
-            virtual boost::system::error_code cancel(
+            virtual bool cancel(
                 boost::system::error_code & ec);
 
         public:
-            virtual boost::system::error_code set_non_block(
+            virtual bool set_non_block(
                 bool non_block, 
                 boost::system::error_code & ec);
 
-            virtual boost::system::error_code set_time_out(
+            virtual bool set_time_out(
                 boost::uint32_t time_out, 
                 boost::system::error_code & ec);
 
@@ -184,7 +185,7 @@ namespace ppbox
             std::vector<void *> blocks_;
         };
 
-        PPBOX_REGISTER_URL_SOURCE("capture", CaptureSource);
+        UTIL_REGISTER_URL_SOURCE("capture", CaptureSource);
 
     } // namespace capture
 } // namespace ppbox

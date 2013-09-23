@@ -82,7 +82,7 @@ namespace ppbox
             return true;
         }
 
-        ppbox::data::SourceBase & CaptureMedia2::source()
+        util::stream::Source & CaptureMedia2::source()
         {
             return *source_;
         }

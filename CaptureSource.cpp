@@ -39,7 +39,7 @@ namespace ppbox
 
         CaptureSource::CaptureSource(
             boost::asio::io_service & io_svc)
-            : ppbox::data::UrlSource(io_svc)
+            : util::stream::UrlSource(io_svc)
             , beg_(false)
             , eof_(false)
             , free_pieces2_(NULL)
@@ -187,13 +187,13 @@ namespace ppbox
             return config_.free_sample(sample.context);
         }
 
-        boost::system::error_code CaptureSource::open(
+        bool CaptureSource::open(
             framework::string::Url const & url, 
             boost::uint64_t beg, 
             boost::uint64_t end, 
             boost::system::error_code & ec)
         {
-            return ec;
+            return !ec;
         }
 
         void CaptureSource::async_open(
@@ -216,36 +216,36 @@ namespace ppbox
             return true;
         }
 
-        boost::system::error_code CaptureSource::close(
+        bool CaptureSource::close(
             boost::system::error_code & ec)
         {
             //cycle_.clear();
             ec.clear();
-            return ec;
+            return true;
         }
 
-        boost::system::error_code CaptureSource::cancel(
+        bool CaptureSource::cancel(
             boost::system::error_code & ec)
         {
             response(boost::asio::error::operation_aborted);
             ec.clear();
-            return ec;
+            return true;
         }
 
-        boost::system::error_code CaptureSource::set_non_block(
+        bool CaptureSource::set_non_block(
             bool non_block, 
             boost::system::error_code & ec)
         {
             ec.clear();
-            return ec;
+            return true;
         }
 
-        boost::system::error_code CaptureSource::set_time_out(
+        bool CaptureSource::set_time_out(
             boost::uint32_t time_out, 
             boost::system::error_code & ec)
         {
             ec.clear();
-            return ec;
+            return true;
         }
 
         size_t CaptureSource::private_read_some(

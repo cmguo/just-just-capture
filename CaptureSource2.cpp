@@ -38,7 +38,7 @@ namespace ppbox
 
         CaptureSource2::CaptureSource2(
             boost::asio::io_service & io_svc)
-            : ppbox::data::UrlSource(io_svc)
+            : util::stream::UrlSource(io_svc)
         {
             feature_.piece_size = 256;
             feature_.packet_max_size = 256;
@@ -88,7 +88,7 @@ namespace ppbox
             return scale_in;
         }
 
-        boost::system::error_code CaptureSource2::open(
+        bool CaptureSource2::open(
             framework::string::Url const & url, 
             boost::uint64_t beg, 
             boost::uint64_t end, 
@@ -103,7 +103,7 @@ namespace ppbox
                 init_stream(audio, ec);
             }
             if (streams_.empty()) {
-                return ec;
+                return false;
             }
             boost::uint64_t divisor = streams_[0].time_scale;
             boost::uint64_t multiple = streams_[0].time_scale;
@@ -119,7 +119,7 @@ namespace ppbox
             feature_.piece_size = feature_.packet_max_size;
             feature_.block_size = 4 * 1024 * 1024;
             feature_.buffer_size = 8 * 1024 * 1024;
-            return ec;
+            return true;
         }
 
         bool CaptureSource2::is_open(
@@ -129,27 +129,27 @@ namespace ppbox
             return true;
         }
 
-        boost::system::error_code CaptureSource2::close(
+        bool CaptureSource2::close(
             boost::system::error_code & ec)
         {
             ec.clear();
-            return ec;
+            return true;
         }
 
-        boost::system::error_code CaptureSource2::set_non_block(
+        bool CaptureSource2::set_non_block(
             bool non_block, 
             boost::system::error_code & ec)
         {
             ec.clear();
-            return ec;
+            return true;
         }
 
-        boost::system::error_code CaptureSource2::set_time_out(
+        bool CaptureSource2::set_time_out(
             boost::uint32_t time_out, 
             boost::system::error_code & ec)
         {
             ec.clear();
-            return ec;
+            return true;
         }
 
         size_t CaptureSource2::private_read_some(

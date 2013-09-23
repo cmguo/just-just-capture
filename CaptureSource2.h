@@ -5,7 +5,7 @@
 
 #include "ppbox/capture/CaptureFormat.h"
 
-#include <ppbox/data/base/UrlSource.h>
+#include <util/stream/UrlSource.h>
 
 namespace ppbox
 {
@@ -13,7 +13,7 @@ namespace ppbox
     {
 
         class CaptureSource2
-            : public ppbox::data::UrlSource
+            : public util::stream::UrlSource
         {
         public:
             CaptureSource2(
@@ -36,9 +36,9 @@ namespace ppbox
             }
 
         public:
-            using ppbox::data::UrlSource::open;
+            using util::stream::UrlSource::open;
 
-            virtual boost::system::error_code open(
+            virtual bool open(
                 framework::string::Url const & url,
                 boost::uint64_t beg, 
                 boost::uint64_t end, 
@@ -47,15 +47,15 @@ namespace ppbox
             virtual bool is_open(
                 boost::system::error_code & ec);
 
-            virtual boost::system::error_code close(
+            virtual bool close(
                 boost::system::error_code & ec);
 
         public:
-            virtual boost::system::error_code set_non_block(
+            virtual bool set_non_block(
                 bool non_block, 
                 boost::system::error_code & ec);
 
-            virtual boost::system::error_code set_time_out(
+            virtual bool set_time_out(
                 boost::uint32_t time_out, 
                 boost::system::error_code & ec);
 
@@ -83,7 +83,7 @@ namespace ppbox
             std::vector<CaptureBuffer> buffers_;
         };
 
-        PPBOX_REGISTER_URL_SOURCE("capture2", CaptureSource2);
+        UTIL_REGISTER_URL_SOURCE("capture2", CaptureSource2);
 
     } // namespace capture
 } // namespace ppbox

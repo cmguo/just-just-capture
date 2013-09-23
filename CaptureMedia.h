@@ -48,7 +48,7 @@ namespace ppbox
                 ppbox::data::PacketFeature & feature,
                 boost::system::error_code & ec) const;
 
-            virtual ppbox::data::SourceBase & source();
+            virtual util::stream::Source & source();
 
         private:
             void handle_open(
