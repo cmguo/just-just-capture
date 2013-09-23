@@ -54,10 +54,8 @@ namespace ppbox
                 for (size_t i = 0; i < stream_sampless_.size(); ++i) {
                     delete (StreamSamples *)stream_sampless_[i];
                 }
-                stream_samples_ = NULL;
-            } else {
-                delete stream_samples_;
             }
+            delete stream_samples_;
         }
 
         bool CaptureSource::init(
@@ -75,17 +73,13 @@ namespace ppbox
             stream_begs_.resize(count, false);
             stream_eofs_.resize(count, false);
 
+            stream_samples_ = new StreamSamples(true);
             if (config_.flags & config_.f_multi_thread) {
                 stream_sampless_.resize(count, NULL);
                 for (size_t i = 0; i < stream_sampless_.size(); ++i) {
-                    if (i == 0) {
-                        stream_sampless_[i] = stream_samples_ = new StreamSamples(true);
-                    } else {
-                        stream_sampless_[i] = new StreamSamples(true);
-                    }
+                    stream_sampless_[i] = new StreamSamples(false);
                 }
             } else {
-                stream_samples_ = new StreamSamples(true);
                 stream_sampless_.resize(count, stream_samples_);
             }
 
@@ -127,19 +121,10 @@ namespace ppbox
                 assert(sample2.buffer);
                 sample2.context = copy_sample_buffers(stream_samples, sample2.size, sample2.buffer);
             }
-            if ((config_.flags & config_.f_multi_thread) && sample.itrack == 0) {
-                for (size_t i = 1; i < streams_.size(); ++i) {
-                    StreamSamples & stream_samples2 = *stream_sampless_[i];
-                    while (!stream_samples2.samples_.empty()) {
-                        stream_samples_->samples_.push(stream_samples2.samples_.front());
-                        stream_samples2.samples_.pop();
-                    }
-                }
-            }
             if (stream_samples.samples_.push(sample2)) {
                 if (!beg_) {
-                    stream_eofs_[sample2.itrack] = true;
-                    if (std::find(stream_eofs_.begin(), stream_eofs_.end(), false) == stream_eofs_.end()) {
+                    stream_begs_[sample2.itrack] = true;
+                    if (std::find(stream_begs_.begin(), stream_begs_.end(), false) == stream_begs_.end()) {
                         boost::mutex::scoped_lock lc(mutex_);
                         beg_ = true;
                         response(boost::system::error_code());
@@ -268,12 +253,23 @@ namespace ppbox
             boost::system::error_code & ec)
         {
             if (stream_samples_->samples_.empty()) {
-                if (eof_) {
-                    ec = boost::asio::error::eof;
-                } else {
-                    ec = boost::asio::error::would_block;
+                if ((config_.flags & config_.f_multi_thread)) {
+                    for (size_t i = 0; i < streams_.size(); ++i) {
+                        StreamSamples & stream_samples2 = *stream_sampless_[i];
+                        while (!stream_samples2.samples_.empty()) {
+                            stream_samples_->samples_.push(stream_samples2.samples_.front());
+                            stream_samples2.samples_.pop();
+                        }
+                    }
                 }
-                return 0;
+                if (stream_samples_->samples_.empty()) {
+                    if (eof_) {
+                        ec = boost::asio::error::eof;
+                    } else {
+                        ec = boost::asio::error::would_block;
+                    }
+                    return 0;
+                }
             }
             CaptureSample & sample = stream_samples_->samples_.front();
             util::buffers::buffers_copy(buffers,  boost::asio::buffer(&sample, sizeof(sample)));
