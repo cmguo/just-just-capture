@@ -214,7 +214,7 @@ namespace ppbox
         {
             std::string::size_type pos = device.find('{');
             std::string name = device.substr(0, pos);
-            Capture * capture = ppbox::avcodec::Capture::create(name, ec);
+            Capture * capture = ppbox::avcodec::CaptureFactory::create(name, ec);
             if (capture) {
                 std::map<std::string, std::string> param_map;
                 boost::system::error_code ec = 
