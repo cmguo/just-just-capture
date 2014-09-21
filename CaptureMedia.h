@@ -36,11 +36,11 @@ namespace ppbox
 
         public:
             virtual bool get_basic_info(
-                ppbox::data::MediaBasicInfo & info,
+                ppbox::avbase::MediaBasicInfo & info,
                 boost::system::error_code & ec) const;
 
             virtual bool get_info(
-                ppbox::data::MediaInfo & info,
+                ppbox::avbase::MediaInfo & info,
                 boost::system::error_code & ec) const;
 
         public:
@@ -58,7 +58,7 @@ namespace ppbox
         private:
             CaptureModule & mod_;
             CaptureSource * source_;
-            ppbox::data::MediaInfo info_;
+            ppbox::avbase::MediaInfo info_;
         };
 
         PPBOX_REGISTER_MEDIA_BY_PROTOCOL("capture", CaptureMedia);

@@ -27,7 +27,7 @@ namespace ppbox
             boost::system::error_code ec;
             PacketMedia::get_basic_info(info_, ec);
             info_.type = info_.live;
-            info_.format = "capture";
+            info_.format_type = "capture";
         }
 
         CaptureMedia::~CaptureMedia()
@@ -62,7 +62,7 @@ namespace ppbox
         }
 
         bool CaptureMedia::get_basic_info(
-            ppbox::data::MediaBasicInfo & info,
+            ppbox::avbase::MediaBasicInfo & info,
             boost::system::error_code & ec) const
         {
             info = info_;
@@ -71,7 +71,7 @@ namespace ppbox
         }
 
         bool CaptureMedia::get_info(
-            ppbox::data::MediaInfo & info,
+            ppbox::avbase::MediaInfo & info,
             boost::system::error_code & ec) const
         {
             info = info_;

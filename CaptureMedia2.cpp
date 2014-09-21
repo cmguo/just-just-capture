@@ -26,7 +26,7 @@ namespace ppbox
             boost::system::error_code ec;
             PacketMedia::get_basic_info(info_, ec);
             info_.type = info_.live;
-            info_.format = "capture2";
+            info_.format_type = "capture2";
         }
 
         CaptureMedia2::~CaptureMedia2()
