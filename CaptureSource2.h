@@ -1,13 +1,13 @@
 // CaptureSource2.h
 
-#ifndef _PPBOX_CAPTURE_CAPTURE_SOURCE2_H_
-#define _PPBOX_CAPTURE_CAPTURE_SOURCE2_H_
+#ifndef _JUST_CAPTURE_CAPTURE_SOURCE2_H_
+#define _JUST_CAPTURE_CAPTURE_SOURCE2_H_
 
-#include "ppbox/capture/CaptureFormat.h"
+#include "just/capture/CaptureFormat.h"
 
 #include <util/stream/UrlSource.h>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -86,6 +86,6 @@ namespace ppbox
         UTIL_REGISTER_URL_SOURCE("capture2", CaptureSource2);
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_CAPTURE_CAPTURE_SOURCE2_H_
+#endif // _JUST_CAPTURE_CAPTURE_SOURCE2_H_

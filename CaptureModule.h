@@ -1,14 +1,14 @@
 // CaptureModule.h
 
-#ifndef _PPBOX_CAPTURE_capture_MODULE_H_
-#define _PPBOX_CAPTURE_capture_MODULE_H_
+#ifndef _JUST_CAPTURE_capture_MODULE_H_
+#define _JUST_CAPTURE_capture_MODULE_H_
 
 #include <framework/string/Url.h>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -16,7 +16,7 @@ namespace ppbox
         class CaptureSource;
 
         class CaptureModule 
-            : public ppbox::common::CommonModuleBase<CaptureModule>
+            : public just::common::CommonModuleBase<CaptureModule>
         {
         public:
             CaptureModule(
@@ -48,6 +48,6 @@ namespace ppbox
         };
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_CAPTURE_capture_MODULE_H_
+#endif // _JUST_CAPTURE_capture_MODULE_H_

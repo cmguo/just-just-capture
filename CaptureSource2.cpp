@@ -1,11 +1,11 @@
 // CaptureSource2.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureSource2.h"
-#include "ppbox/capture/CaptureFormat.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureSource2.h"
+#include "just/capture/CaptureFormat.h"
 
-#include <ppbox/avcodec/Capture.h>
-using namespace ppbox::avcodec;
+#include <just/avcodec/Capture.h>
+using namespace just::avcodec;
 
 #include <util/buffers/BuffersCopy.h>
 
@@ -14,12 +14,12 @@ using namespace ppbox::avcodec;
 #include <framework/string/ParseStl.h>
 #include <framework/container/Array.h>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
 
-        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureSource2", framework::logger::Debug);
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.capture.CaptureSource2", framework::logger::Debug);
 
         struct CaptureSource2::StreamStatus
         {
@@ -214,7 +214,7 @@ namespace ppbox
         {
             std::string::size_type pos = device.find('{');
             std::string name = device.substr(0, pos);
-            Capture * capture = ppbox::avcodec::CaptureFactory::create(name, ec);
+            Capture * capture = just::avcodec::CaptureFactory::create(name, ec);
             if (capture) {
                 std::map<std::string, std::string> param_map;
                 boost::system::error_code ec = 
@@ -242,4 +242,4 @@ namespace ppbox
         }
         
     } // namespace capture
-} // namespace ppbox
+} // namespace just

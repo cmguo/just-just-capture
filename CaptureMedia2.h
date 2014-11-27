@@ -1,19 +1,19 @@
 // CaptureMedia2.h
 
-#ifndef _PPBOX_CAPTURE_CAPTURE_MEDIA2_H_
-#define _PPBOX_CAPTURE_CAPTURE_MEDIA2_H_
+#ifndef _JUST_CAPTURE_CAPTURE_MEDIA2_H_
+#define _JUST_CAPTURE_CAPTURE_MEDIA2_H_
 
-#include "ppbox/capture/CaptureSource2.h"
+#include "just/capture/CaptureSource2.h"
 
-#include <ppbox/data/packet/PacketMedia.h>
+#include <just/data/packet/PacketMedia.h>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
 
         class CaptureMedia2
-            : public ppbox::data::PacketMedia
+            : public just::data::PacketMedia
         {
         public:
             CaptureMedia2(
@@ -34,16 +34,16 @@ namespace ppbox
 
         public:
             virtual bool get_basic_info(
-                ppbox::avbase::MediaBasicInfo & info,
+                just::avbase::MediaBasicInfo & info,
                 boost::system::error_code & ec) const;
 
             virtual bool get_info(
-                ppbox::avbase::MediaInfo & info,
+                just::avbase::MediaInfo & info,
                 boost::system::error_code & ec) const;
 
         public:
             virtual bool get_packet_feature(
-                ppbox::data::PacketFeature & feature,
+                just::data::PacketFeature & feature,
                 boost::system::error_code & ec) const;
 
             virtual util::stream::Source & source();
@@ -55,12 +55,12 @@ namespace ppbox
 
         private:
             CaptureSource2 * source_;
-            ppbox::avbase::MediaInfo info_;
+            just::avbase::MediaInfo info_;
         };
 
-        PPBOX_REGISTER_MEDIA_BY_PROTOCOL("capture2", CaptureMedia2);
+        JUST_REGISTER_MEDIA_BY_PROTOCOL("capture2", CaptureMedia2);
 
     } // capture
-} // ppbox
+} // just
 
-#endif // _PPBOX_CAPTURE_CAPTURE_MEDIA2_H_
+#endif // _JUST_CAPTURE_CAPTURE_MEDIA2_H_

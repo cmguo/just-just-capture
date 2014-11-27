@@ -1,17 +1,17 @@
 // CaptureFilter2.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureFilter2.h"
-#include "ppbox/capture/CaptureSource2.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureFilter2.h"
+#include "just/capture/CaptureSource2.h"
 
-#include <ppbox/demux/base/DemuxError.h>
-using namespace ppbox::demux;
+#include <just/demux/base/DemuxError.h>
+using namespace just::demux;
 
-#include <ppbox/data/base/MemoryLock.h>
+#include <just/data/base/MemoryLock.h>
 
 #include <util/buffers/BuffersCopy.h>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -102,4 +102,4 @@ namespace ppbox
         }
 
     } // namespace mux
-} // namespace ppbox
+} // namespace just

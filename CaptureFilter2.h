@@ -1,13 +1,13 @@
 // CaptureFilter2.h
 
-#ifndef _PPBOX_CAPTURE_CAPTURE_FILTER2_H_
-#define _PPBOX_CAPTURE_CAPTURE_FILTER2_H_
+#ifndef _JUST_CAPTURE_CAPTURE_FILTER2_H_
+#define _JUST_CAPTURE_CAPTURE_FILTER2_H_
 
-#include "ppbox/capture/CaptureFormat.h"
+#include "just/capture/CaptureFormat.h"
 
-#include <ppbox/demux/packet/Filter.h>
+#include <just/demux/packet/Filter.h>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -15,7 +15,7 @@ namespace ppbox
         class CaptureSource2;
 
         class CaptureFilter2
-            : public ppbox::demux::Filter
+            : public just::demux::Filter
         {
         public:
             CaptureFilter2(
@@ -25,20 +25,20 @@ namespace ppbox
 
         public:
             virtual bool get_sample(
-                ppbox::demux::Sample & sample,
+                just::demux::Sample & sample,
                 boost::system::error_code & ec);
 
             virtual bool get_next_sample(
-                ppbox::demux::Sample & sample,
+                just::demux::Sample & sample,
                 boost::system::error_code & ec);
 
             virtual bool get_last_sample(
-                ppbox::demux::Sample & sample,
+                just::demux::Sample & sample,
                 boost::system::error_code & ec);
 
         private:
             void parse_for_time(
-                ppbox::demux::Sample & sample,
+                just::demux::Sample & sample,
                 boost::system::error_code & ec);
 
         private:
@@ -47,6 +47,6 @@ namespace ppbox
         };
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_CAPTURE_CAPTURE_FILTER2_H_
+#endif // _JUST_CAPTURE_CAPTURE_FILTER2_H_

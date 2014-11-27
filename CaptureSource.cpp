@@ -1,8 +1,8 @@
 // CaptureSource.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureSource.h"
-#include "ppbox/capture/CaptureFormat.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureSource.h"
+#include "just/capture/CaptureFormat.h"
 
 #include <util/buffers/BuffersCopy.h>
 
@@ -13,12 +13,12 @@
 
 #include <boost/bind.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
 
-        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureSource", framework::logger::Debug);
+        FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.capture.CaptureSource", framework::logger::Debug);
 
         struct CaptureSource::StreamSamples
         {
@@ -446,4 +446,4 @@ namespace ppbox
         }
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just

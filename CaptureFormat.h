@@ -1,19 +1,19 @@
 // CaptureFilter.h
 
-#ifndef _PPBOX_CAPTURE_RTM_FILTER_H_
-#define _PPBOX_CAPTURE_RTM_FILTER_H_
+#ifndef _JUST_CAPTURE_RTM_FILTER_H_
+#define _JUST_CAPTURE_RTM_FILTER_H_
 
-#include <ppbox/demux/base/DemuxBase.h>
-#include <ppbox/data/packet/PacketFeature.h>
+#include <just/demux/base/DemuxBase.h>
+#include <just/data/packet/PacketFeature.h>
 
 #include <boost/asio/buffer.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
 
-        using ppbox::data::PacketFeature;
+        using just::data::PacketFeature;
 
         struct CaptureBuffer
         {
@@ -35,7 +35,7 @@ namespace ppbox
             boost::uint32_t len;
         };
 
-        typedef ppbox::demux::StreamInfo CaptureStream;
+        typedef just::demux::StreamInfo CaptureStream;
 
         struct CaptureSample
         {
@@ -89,17 +89,17 @@ namespace ppbox
         };
 
     } // namespace mux
-} // namespace ppbox
+} // namespace just
 
 namespace boost
 {
     namespace asio
     {
-        inline boost::asio::const_buffers_1 buffer(ppbox::capture::CaptureBuffer const & buf)
+        inline boost::asio::const_buffers_1 buffer(just::capture::CaptureBuffer const & buf)
         {
             return buffer(buf.data, buf.len);
         }
     }
 }
 
-#endif // _PPBOX_CAPTURE_RTM_FILTER_H_
+#endif // _JUST_CAPTURE_RTM_FILTER_H_

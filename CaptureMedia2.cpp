@@ -1,8 +1,8 @@
 // CaptureMedia2.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureMedia2.h"
-#include "ppbox/capture/CaptureModule.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureMedia2.h"
+#include "just/capture/CaptureModule.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -10,9 +10,9 @@
 
 #include <boost/bind.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureMedia2", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.capture.CaptureMedia2", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -56,7 +56,7 @@ namespace ppbox
         }
 
         bool CaptureMedia2::get_basic_info(
-            ppbox::data::MediaBasicInfo & info,
+            just::data::MediaBasicInfo & info,
             boost::system::error_code & ec) const
         {
             info = info_;
@@ -65,7 +65,7 @@ namespace ppbox
         }
 
         bool CaptureMedia2::get_info(
-            ppbox::data::MediaInfo & info,
+            just::data::MediaInfo & info,
             boost::system::error_code & ec) const
         {
             info = info_;
@@ -74,7 +74,7 @@ namespace ppbox
         }
 
         bool CaptureMedia2::get_packet_feature(
-            ppbox::data::PacketFeature & feature,
+            just::data::PacketFeature & feature,
             boost::system::error_code & ec) const
         {
             ec.clear();
@@ -88,4 +88,4 @@ namespace ppbox
         }
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just

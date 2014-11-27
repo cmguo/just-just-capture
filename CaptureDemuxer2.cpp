@@ -1,28 +1,28 @@
 // CaptureDemuxer2.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureDemuxer2.h"
-#include "ppbox/capture/CaptureFilter2.h"
-#include "ppbox/capture/CaptureSource2.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureDemuxer2.h"
+#include "just/capture/CaptureFilter2.h"
+#include "just/capture/CaptureSource2.h"
 
-using namespace ppbox::demux;
+using namespace just::demux;
 
 #include <util/buffers/BuffersCopy.h>
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureDemuxer2", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.capture.CaptureDemuxer2", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
 
         CaptureDemuxer2::CaptureDemuxer2(
             boost::asio::io_service & io_svc, 
-            ppbox::data::PacketMedia & media)
-            : ppbox::demux::PacketDemuxer(io_svc, media)
+            just::data::PacketMedia & media)
+            : just::demux::PacketDemuxer(io_svc, media)
             , filter_(NULL)
         {
         }
@@ -58,4 +58,4 @@ namespace ppbox
         }
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just

@@ -1,8 +1,8 @@
 // CaptureMedia.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureMedia.h"
-#include "ppbox/capture/CaptureModule.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureMedia.h"
+#include "just/capture/CaptureModule.h"
 
 #include <framework/logger/Logger.h>
 #include <framework/logger/StreamRecord.h>
@@ -10,9 +10,9 @@
 
 #include <boost/bind.hpp>
 
-FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("ppbox.capture.CaptureMedia", framework::logger::Debug);
+FRAMEWORK_LOGGER_DECLARE_MODULE_LEVEL("just.capture.CaptureMedia", framework::logger::Debug);
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -62,7 +62,7 @@ namespace ppbox
         }
 
         bool CaptureMedia::get_basic_info(
-            ppbox::avbase::MediaBasicInfo & info,
+            just::avbase::MediaBasicInfo & info,
             boost::system::error_code & ec) const
         {
             info = info_;
@@ -71,19 +71,19 @@ namespace ppbox
         }
 
         bool CaptureMedia::get_info(
-            ppbox::avbase::MediaInfo & info,
+            just::avbase::MediaInfo & info,
             boost::system::error_code & ec) const
         {
             info = info_;
             if (!(source_->config().flags & CaptureConfigData::f_stream_ordered)) {
-                info.flags |= ppbox::data::PacketMediaFlags::f_non_ordered;
+                info.flags |= just::data::PacketMediaFlags::f_non_ordered;
             }
             ec.clear();
             return PacketMedia::get_info(info, ec);
         }
 
         bool CaptureMedia::get_packet_feature(
-            ppbox::data::PacketFeature & feature,
+            just::data::PacketFeature & feature,
             boost::system::error_code & ec) const
         {
             feature.piece_size = sizeof(CaptureSample);
@@ -100,4 +100,4 @@ namespace ppbox
         }
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just

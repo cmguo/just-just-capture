@@ -1,3 +1,3 @@
 // Common.cpp
 
-#include "ppbox/capture/Common.h"
+#include "just/capture/Common.h"

@@ -1,13 +1,13 @@
 // Define.h
 
-#ifndef _PPBOX_CAPTURE_DEFINE_H_
-#define _PPBOX_CAPTURE_DEFINE_H_
+#ifndef _JUST_CAPTURE_DEFINE_H_
+#define _JUST_CAPTURE_DEFINE_H_
 
-#include "ppbox/common/VersionDefine.h" // for VERSION
+#include "just/common/VersionDefine.h" // for VERSION
 
-#define NAME ppbox_mmspd
+#define NAME just_mmspd
 
-#define BEGIN_NAME_SPACE namespace ppbox { namespace capture {
+#define BEGIN_NAME_SPACE namespace just { namespace capture {
 
 #define END_NAME_SPACE }}
 

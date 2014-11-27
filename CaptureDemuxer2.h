@@ -1,11 +1,11 @@
 // CaptureDemuxer2.h
 
-#ifndef _PPBOX_CAPTURE_CAPTURE_DEMUXER2_H_
-#define _PPBOX_CAPTURE_CAPTURE_DEMUXER2_H_
+#ifndef _JUST_CAPTURE_CAPTURE_DEMUXER2_H_
+#define _JUST_CAPTURE_CAPTURE_DEMUXER2_H_
 
-#include "ppbox/demux/packet/PacketDemuxer.h"
+#include "just/demux/packet/PacketDemuxer.h"
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -13,18 +13,18 @@ namespace ppbox
         class CaptureFilter2;
 
         class CaptureDemuxer2
-            : public ppbox::demux::PacketDemuxer
+            : public just::demux::PacketDemuxer
         {
         public:
             CaptureDemuxer2(
                 boost::asio::io_service & io_svc, 
-                ppbox::data::PacketMedia & media);
+                just::data::PacketMedia & media);
 
             virtual ~CaptureDemuxer2();
 
         public:
             virtual bool free_sample(
-                ppbox::demux::Sample & sample, 
+                just::demux::Sample & sample, 
                 boost::system::error_code & ec);
 
         protected:
@@ -36,9 +36,9 @@ namespace ppbox
             std::vector<bool> stream_begs_;
         };
 
-        PPBOX_REGISTER_PACKET_DEMUXER("capture2", CaptureDemuxer2);
+        JUST_REGISTER_PACKET_DEMUXER("capture2", CaptureDemuxer2);
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_CAPTURE_CAPTURE_DEMUXER2_H_
+#endif // _JUST_CAPTURE_CAPTURE_DEMUXER2_H_

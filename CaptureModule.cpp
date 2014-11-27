@@ -1,17 +1,17 @@
 // CaptureModule.cpp
 
-#include "ppbox/capture/Common.h"
-#include "ppbox/capture/CaptureModule.h"
-#include "ppbox/capture/ClassRegister.h"
+#include "just/capture/Common.h"
+#include "just/capture/CaptureModule.h"
+#include "just/capture/ClassRegister.h"
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
 
         CaptureModule::CaptureModule(
             util::daemon::Daemon & daemon)
-            : ppbox::common::CommonModuleBase<CaptureModule>(daemon, "CaptureModule")
+            : just::common::CommonModuleBase<CaptureModule>(daemon, "CaptureModule")
         {
         }
 
@@ -134,4 +134,4 @@ namespace ppbox
         }
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just

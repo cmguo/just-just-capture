@@ -1,16 +1,16 @@
 // ClassRegister.h
 
-#ifndef _PPBOX_CAPTURE_CLASS_REGISTER_H_
-#define _PPBOX_CAPTURE_CLASS_REGISTER_H_
+#ifndef _JUST_CAPTURE_CLASS_REGISTER_H_
+#define _JUST_CAPTURE_CLASS_REGISTER_H_
 
 #include <util/tools/ClassRegister.h>
 
-#include "ppbox/capture/CaptureSource.h"
-#include "ppbox/capture/CaptureMedia.h"
-#include "ppbox/capture/CaptureDemuxer.h"
+#include "just/capture/CaptureSource.h"
+#include "just/capture/CaptureMedia.h"
+#include "just/capture/CaptureDemuxer.h"
 
-#include "ppbox/capture/CaptureSource2.h"
-#include "ppbox/capture/CaptureMedia2.h"
-#include "ppbox/capture/CaptureDemuxer2.h"
+#include "just/capture/CaptureSource2.h"
+#include "just/capture/CaptureMedia2.h"
+#include "just/capture/CaptureDemuxer2.h"
 
-#endif //_PPBOX_CAPTURE_CLASS_REGISTER_H_
+#endif //_JUST_CAPTURE_CLASS_REGISTER_H_

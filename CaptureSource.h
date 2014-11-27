@@ -1,11 +1,11 @@
 // CaptureSource.h
 
-#ifndef _PPBOX_CAPTURE_CAPTURE_SOURCE_H_
-#define _PPBOX_CAPTURE_CAPTURE_SOURCE_H_
+#ifndef _JUST_CAPTURE_CAPTURE_SOURCE_H_
+#define _JUST_CAPTURE_CAPTURE_SOURCE_H_
 
-#include "ppbox/capture/CaptureFormat.h"
+#include "just/capture/CaptureFormat.h"
 
-#include <ppbox/data/packet/PacketFeature.h>
+#include <just/data/packet/PacketFeature.h>
 
 #include <util/stream/UrlSource.h>
 
@@ -14,7 +14,7 @@
 
 #include <boost/thread/mutex.hpp>
 
-namespace ppbox
+namespace just
 {
     namespace capture
     {
@@ -188,6 +188,6 @@ namespace ppbox
         UTIL_REGISTER_URL_SOURCE("capture", CaptureSource);
 
     } // namespace capture
-} // namespace ppbox
+} // namespace just
 
-#endif // _PPBOX_CAPTURE_CAPTURE_SOURCE_H_
+#endif // _JUST_CAPTURE_CAPTURE_SOURCE_H_
