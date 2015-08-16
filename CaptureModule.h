@@ -25,9 +25,11 @@ namespace just
             virtual ~CaptureModule();
 
         public:
-            virtual boost::system::error_code startup();
+            virtual bool startup(
+                boost::system::error_code & ec);
 
-            virtual void shutdown();
+            virtual bool shutdown(
+                boost::system::error_code & ec);
 
         public:
             CaptureSource * create(

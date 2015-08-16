@@ -19,14 +19,16 @@ namespace just
         {
         }
 
-        boost::system::error_code CaptureModule::startup()
+        bool CaptureModule::startup(
+            boost::system::error_code & ec)
         {
-            boost::system::error_code ec;
-            return ec;
+            return true;
         }
 
-        void CaptureModule::shutdown()
+        bool CaptureModule::shutdown(
+            boost::system::error_code & ec)
         {
+            return true;
         }
 
         struct CaptureModule::CaptureInfo
