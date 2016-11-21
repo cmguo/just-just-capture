@@ -39,7 +39,7 @@ namespace just
             boost::system::error_code & ec)
         {
             if (sample.memory) {
-                static_cast<CaptureSource2 &>(source_->source()).free_sample(
+                static_cast<CaptureSource2 &>(source_->stream_source()).free_sample(
                     *(CaptureSample const *)(intptr_t)sample.memory->offset, ec);
             }
             return PacketDemuxer::free_sample(sample, ec);
@@ -49,9 +49,9 @@ namespace just
             boost::system::error_code & ec)
         {
             assert(filter_ == NULL);
-            bool result = static_cast<CaptureSource2 &>(source_->source()).get_streams(stream_infos_, ec);
+            bool result = static_cast<CaptureSource2 &>(source_->stream_source()).get_streams(stream_infos_, ec);
             if (result) {
-                filter_ = new CaptureFilter2(static_cast<CaptureSource2 &>(source().source()));
+                filter_ = new CaptureFilter2(static_cast<CaptureSource2 &>(source().stream_source()));
                 add_filter(filter_);
             }
             return result;
